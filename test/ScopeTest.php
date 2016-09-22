@@ -7,6 +7,7 @@ use League\Fractal\Resource\Item;
 use League\Fractal\Scope;
 use League\Fractal\Serializer\ArraySerializer;
 use League\Fractal\Test\Stub\Transformer\DefaultIncludeBookTransformer;
+use League\Fractal\Test\Stub\Transformer\CircularDefaultIncludeBookTransformer;
 use Mockery;
 
 class ScopeTest extends \PHPUnit_Framework_TestCase
@@ -422,6 +423,28 @@ class ScopeTest extends \PHPUnit_Framework_TestCase
             'a' => 'b',
             'author' => [
                 'c' => 'd',
+            ],
+        ];
+
+        $this->assertSame($expected, $scope->toArray());
+    }
+
+    public function testCircularDefaultInclude()
+    {
+        $manager = new Manager();
+        $manager->setSerializer(new ArraySerializer());
+
+        $resource = new Item([], new CircularDefaultIncludeBookTransformer());
+
+        $scope = new Scope($manager, $resource);
+
+        $expected = [
+            'a' => 'b',
+            'author' => [
+                'c' => 'd',
+                'book' => [
+                    'a' => 'b'
+                ]
             ],
         ];
 

@@ -170,7 +170,8 @@ class Scope
      * Check if - in relation to the current scope - this specific segment should
      * be excluded. That means, if a.b.c is excluded and the current scope is a.b,
      * then c will not be allowed in the transformation whether it appears in
-     * the list of default or available, requested includes.
+     * the list of default or available, requested includes.  We will also prevent
+     * recursive includes like a.b.a.b... which can happen with circular default includes.
      *
      * @internal
      *
@@ -180,6 +181,11 @@ class Scope
      */
     public function isExcluded($checkScopeSegment)
     {
+        // Bail early if this is a recursive include.
+        if (in_array($checkScopeSegment, $this->parentScopes)) {
+            return true;
+        }
+
         if ($this->parentScopes) {
             $scopeArray = array_slice($this->parentScopes, 1);
             array_push($scopeArray, $this->scopeIdentifier, $checkScopeSegment);
